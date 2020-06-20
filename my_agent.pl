@@ -12,14 +12,14 @@
 % This is what should be fleshed out
 
 :- dynamic
-  is_wumpus/2,
-  is_pit/2,
-  is_gold/1,
-  is_wall/1,
-  is_dead,
-  is_visited/1,
-  is_gold_picked/1,
-  path.
+    is_wumpus/2,
+    is_pit/2,
+    is_gold/1,
+    is_wall/1,
+    is_dead,
+    is_visited/1,
+    is_gold_picked/1,
+    path.
 
 
 init_agent :-
@@ -43,18 +43,18 @@ run_agent(Percept, goforward) :-
 	display_world,
 	inform(Percept),
 	pick_gold,
-  update_orientation,
-  display_world,
-  format('=====================================================\n\n').
+	update_orientation,
+	display_world,
+	format('=====================================================\n\n').
 
-path_push(X) :-
+push(X) :-
 	path(P),
 	retractall(path(P)),
 	append([X], P, P1),
 	assert(path(P1)),
 	!.
 
-path_pop(X) :-
+pop(X) :-
 	path([X|P]),
 	retractall(path(_)),
 	assert(path(P)),
@@ -66,7 +66,7 @@ pick_gold :-
 	is_gold(L),
 	execute(grab, _),
 	assert(is_gold_picked(yes)),
-  path_pop(_),
+	pop(_),
 	!.
 
 pick_gold.
@@ -86,11 +86,25 @@ update_orientation :-
 	X =:= 1,
 	Y =:= 1,
 	execute(climb, _),
+	format('\n'),
+	format('        ███████\n'),
+	format('     █████████████\n'),
+	format('   █████████████████\n'),
+	format(' ███████  ███  ███████\n'),
+	format(' ███ ███  ███  ███ ███\n'),
+	format(' ██  █████████████  ██\n'),
+	format(' ██  ███ █ █ █ ███  ██\n'),
+	format(' ██  ██         ██  ██\n'),
+	format('  ██  ██ █ █ █ ██  ██\n'),
+	format('  ███  █████████  ███\n'),
+	format(' ██ ██           ██ ██\n'),
+	format('██   ██         ██   ██\n'),
+	format('\n'),
 	!.
 
 update_orientation :-
 	agent_location(L),
-	path_pop(L1),
+	pop(L1),
 	location_toward(L, O, L1),
 	rotate_to(O),
 	!.
@@ -207,8 +221,8 @@ location_ahead(Ahead, Turn) :-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 inform([_, _, _, yes, _]) :- 
-  add_wall(yes),
-  !.
+	add_wall(yes),
+	!.
 
 inform([Stench, Bleeze, Glitter, no, Scream]) :-
 	trace_path,
@@ -220,7 +234,7 @@ inform([Stench, Bleeze, Glitter, no, Scream]) :-
 trace_path :-
 	\+ is_gold_picked(yes),
 	agent_location(L),
-	path_push(L),
+	push(L),
 	!.
 
 trace_path.
@@ -228,7 +242,7 @@ trace_path.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 agent_location([X, Y]) :-
-  wumpus: agent_location(X, Y).
+	wumpus: agent_location(X, Y).
 
 add_wumpus(no) :-
 	agent_location(L1),
@@ -243,7 +257,8 @@ add_wumpus(no) :-
 	assume_wumpus(no, L5),
 	!.
 
-add_wumpus(yes) :-	
+add_wumpus(yes) :-
+	execute(shoot, _),
 	agent_location(L1),
 	location_toward(L1, 0, L2),
 	assume_wumpus(yes, L2),
